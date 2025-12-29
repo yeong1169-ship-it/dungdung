@@ -142,8 +142,8 @@ router.post('/generate-image', async (req, res) => {
 
     console.log('🎨 원본 프롬프트:', prompt);
 
-    // 둥실이 캐릭터 상세 디자인이 포함된 프롬프트 생성
-    const dungsilPrompt = `round chubby chibi otter character named Dungsil, caramel brown and beige color scheme, beige face and belly and inner arms, caramel brown body, pink paw pads, short cute proportions, simple round design, kawaii style, ${prompt}, warm cheerful atmosphere, digital art, cute illustration`;
+    // 둥실이 캐릭터 상세 디자인이 포함된 프롬프트 생성 (둥실이 강조)
+    const dungsilPrompt = `cute kawaii chibi otter character, round chubby body, caramel brown fur with beige belly, small pink paw pads, adorable big eyes, floating on water, ${prompt}, warm cheerful colors, simple cute digital art illustration, character focus`;
 
     console.log('🦦 둥실이 포함 프롬프트:', dungsilPrompt);
 
