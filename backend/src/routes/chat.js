@@ -147,9 +147,9 @@ router.post('/generate-image', async (req, res) => {
 
     console.log('🦦 둥실이 포함 프롬프트:', dungsilPrompt);
 
-    // Pollinations.ai URL 생성 (무료, API 키 불필요)
+    // Pollinations.ai URL 생성 (무료, API 키 불필요) - 기본 모델 사용
     const encodedPrompt = encodeURIComponent(dungsilPrompt);
-    const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=512&height=512&nologo=true&enhance=true`;
+    const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=512&height=512&nologo=true`;
 
     console.log('✅ 둥실이 이미지 URL 생성 완료!');
 
