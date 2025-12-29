@@ -1,5 +1,8 @@
 // API 기본 URL
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL ||
+  (import.meta.env.MODE === 'production'
+    ? 'https://dungdung.onrender.com/api'
+    : 'http://localhost:5001/api');
 
 // API 클라이언트 유틸리티
 class ApiClient {

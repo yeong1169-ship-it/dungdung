@@ -1,5 +1,8 @@
 // 백엔드 API URL
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
+const API_URL = import.meta.env.VITE_API_URL ||
+  (import.meta.env.MODE === 'production'
+    ? 'https://dungdung.onrender.com/api'
+    : 'http://localhost:5001/api');
 
 // 대화 생성 함수 - 백엔드 API 호출
 export async function generateDungsilResponse(userMessage: string, conversationHistory: Array<{ role: string; text: string }> = []): Promise<string> {
