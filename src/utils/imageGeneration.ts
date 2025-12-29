@@ -36,7 +36,7 @@ export async function generateImage(prompt: string): Promise<string> {
 
 // 백엔드를 통한 이미지 생성
 const API_URL = import.meta.env.VITE_API_URL ||
-  (import.meta.env.MODE === 'production'
+  (window.location.hostname.includes('vercel.app')
     ? 'https://dungdung.onrender.com/api'
     : 'http://localhost:5001/api');
 

@@ -1,6 +1,6 @@
 // API 기본 URL
 const API_BASE_URL = import.meta.env.VITE_API_URL ||
-  (import.meta.env.MODE === 'production'
+  (window.location.hostname.includes('vercel.app')
     ? 'https://dungdung.onrender.com/api'
     : 'http://localhost:5001/api');
 
