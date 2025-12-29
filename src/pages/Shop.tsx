@@ -124,7 +124,7 @@ function PhoneModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
       phoneNumbers.push(newEntry);
       localStorage.setItem('phoneNumbers', JSON.stringify(phoneNumbers));
 
-      toast("소식 받기 신청이 완료되었습니다! 출시 소식을 가장 먼저 알드릴게 🦦", {
+      toast("소식 받기 완료!", {
         style: {
           background: '#fff9f0',
           color: '#5c4033',
@@ -438,7 +438,14 @@ export default function ShopPage({ onNavigate }: { onNavigate: (page: "home" | "
 
   return (
     <>
-      <Toaster position="top-center" />
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          style: {
+            marginTop: '120px',
+          }
+        }}
+      />
       <div className="flex justify-center items-start min-h-[100dvh] bg-[#fff9f0] w-full overflow-x-hidden overflow-y-auto">
         <div className="bg-[#fff9f0] relative w-full min-h-[1250px] pb-[98px]" data-name="샵" style={{ touchAction: "pan-y" }}>
         
