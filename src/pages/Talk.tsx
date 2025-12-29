@@ -396,14 +396,6 @@ export default function Talk({
                           src={msg.imageUrl}
                           alt="둥실이가 만든 이미지"
                           className="rounded-[10px] w-[250px] h-[250px] object-cover"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            if (!target.src.includes('picsum.photos')) {
-                              const randomId = Math.floor(Math.random() * 1000);
-                              target.src = `https://picsum.photos/seed/${randomId}/500/500`;
-                            }
-                          }}
-                          loading="lazy"
                         />
                       </div>
                     ) : (
