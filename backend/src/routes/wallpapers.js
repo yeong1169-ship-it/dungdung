@@ -1,10 +1,18 @@
 import express from 'express';
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import Wallpaper from '../models/Wallpaper.js';
 
 const router = express.Router();
+
+// uploads 디렉토리 생성 (Render ephemeral filesystem 대응)
+const uploadsDir = 'uploads/wallpapers';
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+  console.log('📁 uploads/wallpapers 디렉토리 생성됨');
+}
 
 // Multer 설정 (이미지 업로드)
 const storage = multer.diskStorage({
