@@ -454,9 +454,9 @@ export default function Talk({
 
       {/* 이미지 생성 완료 안내 */}
       {showImageCompletionNotice && (
-        <div className="fixed top-[120px] left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top-2 duration-300">
-          <div className="bg-white rounded-[12px] shadow-[0px_4px_16px_rgba(0,0,0,0.15)] px-[24px] py-[14px]">
-            <p className="font-['Hakgyoansim_Dunggeunmiso_OTF:R',sans-serif] text-[14px] text-[#5c4033] text-center leading-[20px]">
+        <div className="fixed top-[120px] left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top-2 duration-300 px-4">
+          <div className="bg-white rounded-[12px] shadow-[0px_4px_16px_rgba(0,0,0,0.15)] px-[28px] py-[16px] min-w-[280px]">
+            <p className="font-['Hakgyoansim_Dunggeunmiso_OTF:R',sans-serif] text-[14px] text-[#5c4033] text-center leading-[22px]">
               다소 시간이 걸릴 수 있습니다<br />
               저장 후 컬렉션에서 확인해주세요
             </p>
