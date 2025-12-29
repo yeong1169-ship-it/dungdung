@@ -6,7 +6,7 @@ import imgImg49951 from "figma:asset/1fffc2e0853567b6893d5e789b541250a761f038.pn
 import bottomNavSvgPaths from "../imports/svg-tgq24q0gmi";
 import bellIconSvgPaths from "../imports/svg-heeqbqbi5k";
 import { useState } from "react";
-import { toast } from "sonner@2.0.3";
+import { toast, Toaster } from "sonner@2.0.3";
 
 function InstagramIcon() {
   return (
@@ -435,10 +435,12 @@ function BottomNav({ onNavigate }: { onNavigate: (page: "home" | "download" | "t
 
 export default function ShopPage({ onNavigate }: { onNavigate: (page: "home" | "download" | "talk" | "shop" | "collection" | "downloadDetail") => void }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+
   return (
-    <div className="flex justify-center items-start min-h-[100dvh] bg-[#fff9f0] w-full overflow-x-hidden overflow-y-auto">
-      <div className="bg-[#fff9f0] relative w-full min-h-[1250px] pb-[98px]" data-name="샵" style={{ touchAction: "pan-y" }}>
+    <>
+      <Toaster position="top-center" />
+      <div className="flex justify-center items-start min-h-[100dvh] bg-[#fff9f0] w-full overflow-x-hidden overflow-y-auto">
+        <div className="bg-[#fff9f0] relative w-full min-h-[1250px] pb-[98px]" data-name="샵" style={{ touchAction: "pan-y" }}>
         
         {/* 상점 이미지 */}
         <div className="absolute flex h-[401.071px] items-center justify-center left-1/2 -translate-x-1/2 top-[72.46px] w-[310.006px]" style={{ "--transform-inner-width": "306", "--transform-inner-height": "398" } as React.CSSProperties}>
@@ -456,11 +458,12 @@ export default function ShopPage({ onNavigate }: { onNavigate: (page: "home" | "
         
         <GoodsImages />
         <CallToAction onNewsClick={() => setIsModalOpen(true)} />
-        
+
         <BottomNav onNavigate={onNavigate} />
-        
+
         <PhoneModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
       </div>
     </div>
+    </>
   );
 }
