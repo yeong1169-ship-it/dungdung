@@ -30,7 +30,10 @@ app.use(helmet({
 app.use(compression()); // 응답 압축
 app.use(morgan('dev')); // 로깅
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: function(origin, callback) {
+    // Allow all origins
+    callback(null, true);
+  },
   credentials: true
 }));
 app.use(express.json());
