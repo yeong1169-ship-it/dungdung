@@ -142,14 +142,14 @@ router.post('/generate-image', async (req, res) => {
 
     console.log('🎨 원본 프롬프트:', prompt);
 
-    // 둥실이 캐릭터 상세 디자인이 포함된 프롬프트 생성 (둥실이 강조)
-    const dungsilPrompt = `cute kawaii chibi otter character, round chubby body, caramel brown fur with beige belly, small pink paw pads, adorable big eyes, floating on water, ${prompt}, warm cheerful colors, simple cute digital art illustration, character focus`;
+    // 둥실이 캐릭터를 반드시 포함하도록 프롬프트 최적화 (캐릭터 중심)
+    const dungsilPrompt = `MAIN SUBJECT: adorable kawaii chibi otter character with round chubby body, caramel brown soft fur, beige fluffy belly, tiny pink paw pads, big sparkling eyes, peacefully floating on calm water surface. SCENE: ${prompt}. STYLE: warm cheerful pastel colors, simple cute wholesome digital art, soft lighting, character-focused composition, gentle atmosphere`;
 
-    console.log('🦦 둥실이 포함 프롬프트:', dungsilPrompt);
+    console.log('🦦 둥실이 중심 프롬프트:', dungsilPrompt);
 
-    // Pollinations.ai URL 생성 (무료, API 키 불필요) - 기본 모델 사용
+    // Pollinations.ai URL 생성 - 둥실이 캐릭터 필수 포함
     const encodedPrompt = encodeURIComponent(dungsilPrompt);
-    const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=512&height=512&nologo=true`;
+    const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=512&height=512&nologo=true&seed=${Date.now()}`;
 
     console.log('✅ 둥실이 이미지 URL 생성 완료!');
 
@@ -157,9 +157,9 @@ router.post('/generate-image', async (req, res) => {
   } catch (error) {
     console.error('❌ 이미지 생성 오류:', error);
 
-    // 오류 시 기본 둥실이 이미지 반환
-    const fallbackPrompt = encodeURIComponent('round chubby chibi otter character, caramel brown and beige colors, pink paw pads, floating on water, kawaii style, simple cute design');
-    const fallbackUrl = `https://image.pollinations.ai/prompt/${fallbackPrompt}?width=512&height=512&nologo=true`;
+    // 오류 시 기본 둥실이 캐릭터 이미지 반환
+    const fallbackPrompt = encodeURIComponent('MAIN SUBJECT: adorable round chubby kawaii chibi otter character, caramel brown fur, beige belly, pink paw pads, big eyes, floating peacefully on water. STYLE: simple cute digital art, warm pastel colors, wholesome gentle atmosphere');
+    const fallbackUrl = `https://image.pollinations.ai/prompt/${fallbackPrompt}?width=512&height=512&nologo=true&seed=${Date.now()}`;
 
     res.json({
       imageUrl: fallbackUrl,
