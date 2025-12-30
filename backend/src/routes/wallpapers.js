@@ -1,45 +1,16 @@
 import express from 'express';
-import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
-import { v4 as uuidv4 } from 'uuid';
 import Wallpaper from '../models/Wallpaper.js';
+import { cloudinary, upload } from '../config/cloudinary.js';
 
 const router = express.Router();
 
-// uploads 디렉토리 생성 (Render ephemeral filesystem 대응)
-const uploadsDir = 'uploads/wallpapers';
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-  console.log('📁 uploads/wallpapers 디렉토리 생성됨');
-}
-
-// Multer 설정 (이미지 업로드)
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/wallpapers');
-  },
-  filename: (req, file, cb) => {
-    const uniqueName = `${uuidv4()}${path.extname(file.originalname)}`;
-    cb(null, uniqueName);
-  }
-});
-
-const upload = multer({
-  storage,
-  limits: { fileSize: parseInt(process.env.MAX_FILE_SIZE) || 10485760 }, // 10MB
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|webp/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
-
-    if (extname && mimetype) {
-      cb(null, true);
-    } else {
-      cb(new Error('이미지 파일만 업로드 가능합니다 (jpeg, jpg, png, webp)'));
-    }
-  }
-});
+// Cloudinary public_id 추출 헬퍼 함수
+const getPublicIdFromUrl = (url) => {
+  if (!url) return null;
+  // URL에서 public_id 추출: https://res.cloudinary.com/xxx/image/upload/v123/dungsil/wallpapers/filename.jpg
+  const matches = url.match(/\/dungsil\/wallpapers\/([^.]+)/);
+  return matches ? `dungsil/wallpapers/${matches[1]}` : null;
+};
 
 // 모든 배경화면 가져오기
 router.get('/', async (req, res) => {
@@ -110,7 +81,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// 배경화면 생성 (이미지 업로드 포함)
+// 배경화면 생성 (Cloudinary 이미지 업로드)
 router.post('/', upload.fields([
   { name: 'mobile', maxCount: 1 },
   { name: 'tablet', maxCount: 1 },
@@ -123,13 +94,13 @@ router.post('/', upload.fields([
 
     const wallpaperData = {
       ...req.body,
-      // 기본 imageUrl은 모바일 이미지 사용, 없으면 태블릿, 없으면 데스크톱
-      imageUrl: req.files.mobile ? `/uploads/wallpapers/${req.files.mobile[0].filename}`
-              : req.files.tablet ? `/uploads/wallpapers/${req.files.tablet[0].filename}`
-              : `/uploads/wallpapers/${req.files.desktop[0].filename}`,
-      mobileImage: req.files.mobile ? `/uploads/wallpapers/${req.files.mobile[0].filename}` : null,
-      tabletImage: req.files.tablet ? `/uploads/wallpapers/${req.files.tablet[0].filename}` : null,
-      desktopImage: req.files.desktop ? `/uploads/wallpapers/${req.files.desktop[0].filename}` : null
+      // Cloudinary URL 저장 (절대 경로)
+      imageUrl: req.files.mobile ? req.files.mobile[0].path
+              : req.files.tablet ? req.files.tablet[0].path
+              : req.files.desktop[0].path,
+      mobileImage: req.files.mobile ? req.files.mobile[0].path : null,
+      tabletImage: req.files.tablet ? req.files.tablet[0].path : null,
+      desktopImage: req.files.desktop ? req.files.desktop[0].path : null
     };
 
     // colors가 문자열로 전달된 경우 배열로 변환
@@ -140,8 +111,11 @@ router.post('/', upload.fields([
     const wallpaper = new Wallpaper(wallpaperData);
     await wallpaper.save();
 
+    console.log('✅ 배경화면 생성 완료 (Cloudinary):', wallpaper._id);
+
     res.status(201).json(wallpaper);
   } catch (error) {
+    console.error('❌ 배경화면 생성 오류:', error);
     res.status(400).json({ error: error.message });
   }
 });
@@ -165,26 +139,47 @@ router.patch('/:id/download', async (req, res) => {
   }
 });
 
-// 배경화면 수정
+// 배경화면 수정 (Cloudinary 이미지 업데이트)
 router.put('/:id', upload.fields([
   { name: 'mobile', maxCount: 1 },
   { name: 'tablet', maxCount: 1 },
   { name: 'desktop', maxCount: 1 }
 ]), async (req, res) => {
   try {
+    const existingWallpaper = await Wallpaper.findById(req.params.id);
+    if (!existingWallpaper) {
+      return res.status(404).json({ error: '배경화면을 찾을 수 없습니다' });
+    }
+
     const updateData = { ...req.body };
 
-    // 새로 업로드된 이미지가 있으면 업데이트
+    // 새로 업로드된 이미지가 있으면 기존 이미지 삭제 후 업데이트
     if (req.files) {
       if (req.files.mobile) {
-        updateData.mobileImage = `/uploads/wallpapers/${req.files.mobile[0].filename}`;
+        // 기존 모바일 이미지 삭제
+        const oldPublicId = getPublicIdFromUrl(existingWallpaper.mobileImage);
+        if (oldPublicId) {
+          await cloudinary.uploader.destroy(oldPublicId);
+          console.log('🗑️  Cloudinary 이미지 삭제:', oldPublicId);
+        }
+        updateData.mobileImage = req.files.mobile[0].path;
         updateData.imageUrl = updateData.mobileImage; // 기본 이미지도 업데이트
       }
       if (req.files.tablet) {
-        updateData.tabletImage = `/uploads/wallpapers/${req.files.tablet[0].filename}`;
+        // 기존 태블릿 이미지 삭제
+        const oldPublicId = getPublicIdFromUrl(existingWallpaper.tabletImage);
+        if (oldPublicId) {
+          await cloudinary.uploader.destroy(oldPublicId);
+        }
+        updateData.tabletImage = req.files.tablet[0].path;
       }
       if (req.files.desktop) {
-        updateData.desktopImage = `/uploads/wallpapers/${req.files.desktop[0].filename}`;
+        // 기존 데스크톱 이미지 삭제
+        const oldPublicId = getPublicIdFromUrl(existingWallpaper.desktopImage);
+        if (oldPublicId) {
+          await cloudinary.uploader.destroy(oldPublicId);
+        }
+        updateData.desktopImage = req.files.desktop[0].path;
       }
     }
 
@@ -198,27 +193,51 @@ router.put('/:id', upload.fields([
       { new: true, runValidators: true }
     );
 
-    if (!wallpaper) {
-      return res.status(404).json({ error: '배경화면을 찾을 수 없습니다' });
-    }
+    console.log('✅ 배경화면 수정 완료 (Cloudinary):', wallpaper._id);
 
     res.json(wallpaper);
   } catch (error) {
+    console.error('❌ 배경화면 수정 오류:', error);
     res.status(400).json({ error: error.message });
   }
 });
 
-// 배경화면 삭제
+// 배경화면 삭제 (Cloudinary 이미지도 함께 삭제)
 router.delete('/:id', async (req, res) => {
   try {
-    const wallpaper = await Wallpaper.findByIdAndDelete(req.params.id);
+    const wallpaper = await Wallpaper.findById(req.params.id);
 
     if (!wallpaper) {
       return res.status(404).json({ error: '배경화면을 찾을 수 없습니다' });
     }
 
+    // Cloudinary에서 모든 이미지 삭제
+    const imagesToDelete = [
+      wallpaper.mobileImage,
+      wallpaper.tabletImage,
+      wallpaper.desktopImage
+    ].filter(Boolean);
+
+    for (const imageUrl of imagesToDelete) {
+      const publicId = getPublicIdFromUrl(imageUrl);
+      if (publicId) {
+        try {
+          await cloudinary.uploader.destroy(publicId);
+          console.log('🗑️  Cloudinary 이미지 삭제:', publicId);
+        } catch (err) {
+          console.error('⚠️  Cloudinary 이미지 삭제 실패:', publicId, err.message);
+        }
+      }
+    }
+
+    // MongoDB에서 삭제
+    await Wallpaper.findByIdAndDelete(req.params.id);
+
+    console.log('✅ 배경화면 삭제 완료:', req.params.id);
+
     res.json({ message: '배경화면이 삭제되었습니다' });
   } catch (error) {
+    console.error('❌ 배경화면 삭제 오류:', error);
     res.status(500).json({ error: error.message });
   }
 });

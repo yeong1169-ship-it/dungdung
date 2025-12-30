@@ -24,7 +24,6 @@ connectDB();
 
 // Middleware
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }, // 이미지 CORS 허용
   contentSecurityPolicy: false // CSP 비활성화 (개발 환경)
 })); // 보안 헤더
 app.use(compression()); // 응답 압축
@@ -45,13 +44,6 @@ const limiter = rateLimit({
   max: 100 // 최대 100개 요청
 });
 app.use('/api/', limiter);
-
-// 정적 파일 제공 (업로드된 이미지) - CORS 헤더 추가
-app.use('/uploads', (req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-  next();
-}, express.static('uploads'));
 
 // API Routes
 app.use('/api/quotes', quotesRouter);
