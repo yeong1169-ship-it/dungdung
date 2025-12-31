@@ -79,7 +79,7 @@ function Frame2({ quote }: { quote: { text: string; author: string } }) {
   return (
     <div className="content-stretch flex flex-col gap-[4px] items-start relative shrink-0 w-full">
       <Frame1 onRefresh={() => {}} />
-      <div className="font-['Hakgyoansim_Dunggeunmiso_OTF:R',sans-serif] leading-[24px] not-italic relative shrink-0 text-[#5c4033] text-[16px] text-center w-full whitespace-pre-line">
+      <div className="font-['Hakgyoansim_Dunggeunmiso_OTF:R',sans-serif] leading-[22px] not-italic relative shrink-0 text-[#5c4033] text-[15px] text-center w-full whitespace-pre-line">
         {quote.text}
       </div>
     </div>
@@ -158,13 +158,13 @@ function Frame5({ quote, onLike, isLiked, setIsLiked, isLoggedIn }: { quote: { t
 
 function Frame4({ quote, onRefresh, onLike, isLiked, setIsLiked, isLoggedIn }: { quote: { text: string; author: string }; onRefresh: () => void; onLike: () => void; isLiked: boolean; setIsLiked: (value: boolean) => void; isLoggedIn: boolean }) {
   return (
-    <div className="absolute bg-[rgba(255,255,255,0.95)] box-border content-stretch flex flex-col gap-[8px] h-[190px] items-center left-1/2 -translate-x-1/2 px-[21px] py-[17px] rounded-[24px] top-[431px] w-[86.4%] max-w-[324px]">
+    <div className="absolute bg-[rgba(255,255,255,0.95)] box-border content-stretch flex flex-col gap-[8px] min-h-[250px] items-center left-1/2 -translate-x-1/2 px-[21px] py-[17px] rounded-[24px] top-[431px] w-[86.4%] max-w-[324px]">
       <div aria-hidden="true" className="absolute border border-[rgba(229,254,219,0.73)] border-solid inset-0 pointer-events-none rounded-[24px] shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)]" />
       <div className="content-stretch flex gap-[22px] h-[29.75px] items-center justify-center relative shrink-0 w-full">
         <p className="font-['Hakgyoansim_Dunggeunmiso_OTF:B',sans-serif] leading-[24px] not-italic relative shrink-0 text-[#8faf3e] text-[18px] text-center text-nowrap whitespace-pre">오늘 둥실이의 한마디</p>
         <QuoteCard onClick={onRefresh} />
       </div>
-      <div className="font-['Hakgyoansim_Dunggeunmiso_OTF:R',sans-serif] leading-[24px] not-italic relative shrink-0 text-[#5c4033] text-[16px] text-center w-full whitespace-pre-line">
+      <div className="font-['Hakgyoansim_Dunggeunmiso_OTF:R',sans-serif] leading-[22px] not-italic relative shrink-0 text-[#5c4033] text-[15px] text-center w-full whitespace-pre-line">
         {quote.text}
       </div>
       <p className="font-['Hakgyoansim_Dunggeunmiso_OTF:R',sans-serif] leading-[21px] not-italic opacity-70 relative shrink-0 text-[#5c4033] text-[13px] text-center w-full">-{quote.author}-</p>
