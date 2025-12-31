@@ -29,7 +29,7 @@ export default function AdminDashboard() {
     try {
       setLoading(true);
 
-      const quotes = await quotesApi.getAll();
+      const quotes = await quotesApi.getAll({ limit: 100 });
 
       let wallpapers: Wallpaper[] = [];
       try {
