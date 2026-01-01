@@ -92,6 +92,12 @@ router.post('/', upload.fields([
       return res.status(400).json({ error: '최소 하나의 이미지 파일이 필요합니다' });
     }
 
+    // 🔍 업로드된 파일 정보 로깅
+    console.log('📤 파일 업로드 시작:');
+    if (req.files.mobile) console.log('  Mobile:', req.files.mobile[0].path);
+    if (req.files.tablet) console.log('  Tablet:', req.files.tablet[0].path);
+    if (req.files.desktop) console.log('  Desktop:', req.files.desktop[0].path);
+
     const wallpaperData = {
       ...req.body,
       // Cloudinary URL 저장 (절대 경로)
@@ -112,6 +118,7 @@ router.post('/', upload.fields([
     await wallpaper.save();
 
     console.log('✅ 배경화면 생성 완료 (Cloudinary):', wallpaper._id);
+    console.log('   저장된 URL:', wallpaperData.imageUrl);
 
     res.status(201).json(wallpaper);
   } catch (error) {

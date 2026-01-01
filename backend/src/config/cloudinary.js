@@ -16,8 +16,15 @@ cloudinary.config({
 if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
   console.error('⚠️  Cloudinary 환경 변수가 설정되지 않았습니다!');
   console.error('📝 CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET를 .env에 추가하세요.');
+  console.error('현재 환경 변수:', {
+    CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME ? '설정됨' : '없음',
+    CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY ? '설정됨' : '없음',
+    CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET ? '설정됨' : '없음'
+  });
 } else {
   console.log('✅ Cloudinary 설정 완료:', process.env.CLOUDINARY_CLOUD_NAME);
+  console.log('   Cloud Name:', process.env.CLOUDINARY_CLOUD_NAME);
+  console.log('   API Key:', process.env.CLOUDINARY_API_KEY?.substring(0, 6) + '...');
 }
 
 // Cloudinary Storage 설정
