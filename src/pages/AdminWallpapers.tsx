@@ -451,21 +451,30 @@ export default function AdminWallpapers() {
         submitFormData.append('desktop', file);
       }
 
+      console.log('📤 업로드 시작:', {
+        제목: formData.title,
+        모바일: !!submitFormData.get('mobile'),
+        태블릿: !!submitFormData.get('tablet'),
+        데스크톱: !!submitFormData.get('desktop')
+      });
+
       if (editingWallpaper) {
         // 수정
         await wallpapersApi.update(editingWallpaper._id, submitFormData);
         toast.success("배경화면이 수정되었습니다");
       } else {
         // 추가
-        await wallpapersApi.create(submitFormData);
+        const result = await wallpapersApi.create(submitFormData);
+        console.log('✅ 업로드 성공:', result);
         toast.success("새 배경화면이 추가되었습니다");
       }
 
       handleCloseModal();
       loadWallpapers();
-    } catch (error) {
-      console.error("배경화면 저장 실패:", error);
-      toast.error("배경화면 저장에 실패했습니다");
+    } catch (error: any) {
+      console.error("❌ 배경화면 저장 실패:", error);
+      console.error("에러 상세:", error.response?.data || error.message);
+      toast.error(error.response?.data?.error || error.message || "배경화면 저장에 실패했습니다");
     }
   };
 
@@ -555,21 +564,9 @@ export default function AdminWallpapers() {
               </div>
 
               <div className="p-5">
-                <h3 className="font-['Hakgyoansim_Dunggeunmiso_OTF:B',sans-serif] text-[14px] text-[#5c4033] mb-4 line-clamp-1">
+                <h3 className="font-['Hakgyoansim_Dunggeunmiso_OTF:B',sans-serif] text-[14px] text-[#5c4033] mb-2 line-clamp-1">
                   {wallpaper.title}
                 </h3>
-
-                {wallpaper.colors && wallpaper.colors.length > 0 && (
-                  <div className="flex gap-2 mb-4">
-                    {wallpaper.colors.slice(0, 3).map((color, index) => (
-                      <div
-                        key={index}
-                        className="w-6 h-6 rounded-full border border-gray-200"
-                        style={{ backgroundColor: color }}
-                      />
-                    ))}
-                  </div>
-                )}
 
                 <div className="flex items-center gap-4 text-[11px] text-[#5c4033] opacity-60 mb-4">
                   <span>👁️ {wallpaper.views}</span>
@@ -594,7 +591,7 @@ export default function AdminWallpapers() {
                           crop: { unit: "%", width: 90, height: 90, x: 5, y: 5 },
                           completedCrop: null
                         },
-                        colors: wallpaper.colors || [],
+                        colors: [],
                       });
                       setIsAddModalOpen(true);
                     }}
@@ -709,19 +706,6 @@ export default function AdminWallpapers() {
                           이미지 없음
                         </div>
                       )}
-
-                      {/* 색상 팔레트 오버레이 */}
-                      {formData.colors.length > 0 && (
-                        <div className="absolute right-4 bottom-4 flex gap-1">
-                          {formData.colors.slice(0, 3).map((color, index) => (
-                            <div
-                              key={index}
-                              className="w-6 h-6 rounded-full border-2 border-white shadow-[0px_1px_3px_0px_rgba(0,0,0,0.1)]"
-                              style={{ backgroundColor: color }}
-                            />
-                          ))}
-                        </div>
-                      )}
                     </div>
                   )}
                 </div>
@@ -729,9 +713,8 @@ export default function AdminWallpapers() {
                 {/* 다운로드 페이지 리스트 카드 스타일로 표시 */}
                 <div className="bg-white rounded-[16px] shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),0px_2px_4px_-2px_rgba(0,0,0,0.1)] overflow-hidden">
                   {/* 하단 컨텐츠 영역 */}
-                  <div className="flex items-end justify-between px-[16px] pt-[16px] pb-[16px]">
-                    {/* 왼쪽: 제목과 날짜 */}
-                    <div className="flex flex-col gap-[14px] items-start flex-1">
+                  <div className="px-[16px] pt-[16px] pb-[16px]">
+                    <div className="flex flex-col gap-[14px] items-start">
                       <p className="font-['Hakgyoansim_Dunggeunmiso_OTF:B',sans-serif] text-[#5c4033] text-[18px] text-left">
                         {formData.title || "제목 없음"}
                       </p>
@@ -739,20 +722,6 @@ export default function AdminWallpapers() {
                         {new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '. ').replace(/\.$/, '')}
                       </p>
                     </div>
-
-                    {/* 오른쪽: 컬러 칩 */}
-                    {formData.colors.length > 0 && (
-                      <div className="flex gap-[4px] items-center">
-                        {formData.colors.slice(0, 3).map((color, index) => (
-                          <div key={index} className="bg-[#7b9c00] relative rounded-[1.67772e+07px] shrink-0 size-[24px]" style={{ backgroundColor: color }}>
-                            <div
-                              aria-hidden="true"
-                              className="absolute border-2 border-solid border-white inset-0 pointer-events-none rounded-[1.67772e+07px] shadow-[0px_1px_3px_0px_rgba(0,0,0,0.1),0px_1px_2px_-1px_rgba(0,0,0,0.1)]"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    )}
                   </div>
 
                   {/* 설명 - 있을 경우만 표시 */}
@@ -878,184 +847,6 @@ export default function AdminWallpapers() {
                         </div>
                       </div>
                     ))}
-                  </div>
-                </div>
-
-                {/* 색상 팔레트 */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="font-['Hakgyoansim_Dunggeunmiso_OTF:R',sans-serif] text-[14px] text-[#5c4033]">
-                      색상 팔레트 (3개 자동 추출)
-                    </label>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={handleExtractColors}
-                        className="bg-[#8faf3e] text-white font-['Hakgyoansim_Dunggeunmiso_OTF:R',sans-serif] text-[12px] px-3 py-1.5 rounded-[8px] hover:bg-[#7a9535] transition-colors"
-                      >
-                        🎨 자동 추출
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowEyedropper(!showEyedropper);
-                          setShowColorPicker(false);
-                        }}
-                        className="bg-[#ff9999] text-white font-['Hakgyoansim_Dunggeunmiso_OTF:R',sans-serif] text-[12px] px-3 py-1.5 rounded-[8px] hover:bg-[#ff7777] transition-colors"
-                      >
-                        💧 스포이드
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowColorPicker(!showColorPicker);
-                          setShowEyedropper(false);
-                        }}
-                        className="bg-[#5c4033] text-white font-['Hakgyoansim_Dunggeunmiso_OTF:R',sans-serif] text-[12px] px-3 py-1.5 rounded-[8px] hover:bg-[#4a3429] transition-colors"
-                      >
-                        + 색상 추가
-                      </button>
-                    </div>
-                  </div>
-
-                  {showEyedropper && (
-                    <div className="mb-4">
-                      <div className="p-4 bg-[#fff5f0] rounded-[12px] border-2 border-[#ff9999] mb-3">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <p className="font-['Hakgyoansim_Dunggeunmiso_OTF:R',sans-serif] text-[12px] text-[#5c4033]">
-                              💧 이미지를 클릭하여 색상 추출
-                            </p>
-                            {hoveredColor && (
-                              <div className="flex items-center gap-1">
-                                <div
-                                  className="w-5 h-5 rounded border-2 border-white shadow-sm"
-                                  style={{ backgroundColor: hoveredColor }}
-                                />
-                                <span className="font-['Hakgyoansim_Dunggeunmiso_OTF:R',sans-serif] text-[10px] text-[#5c4033]">
-                                  {hoveredColor}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                          <span className="font-['Hakgyoansim_Dunggeunmiso_OTF:B',sans-serif] text-[11px] text-[#ff9999]">
-                            {formData.colors.length}/3
-                          </span>
-                        </div>
-                        {(formData.images.mobile.preview || formData.images.tablet.preview || formData.images.desktop.preview) ? (
-                          <div className="w-full rounded-[8px] border-2 border-[#8faf3e] bg-white">
-                            <canvas
-                              ref={eyedropperCanvasRef}
-                              onClick={handleImageClick}
-                              onMouseMove={handleImageMove}
-                              onMouseLeave={() => setHoveredColor("")}
-                              className="cursor-crosshair mx-auto block w-full"
-                              style={{ maxWidth: '100%', height: 'auto', maxHeight: '250px', objectFit: 'contain' }}
-                            />
-                          </div>
-                        ) : (
-                          <p className="text-center font-['Hakgyoansim_Dunggeunmiso_OTF:R',sans-serif] text-[12px] text-[#5c4033] opacity-50">
-                            먼저 이미지를 업로드해주세요
-                          </p>
-                        )}
-                      </div>
-
-                      {/* 현재 선택된 색상 미리보기 */}
-                      <div className="p-3 bg-white rounded-[10px] border border-[#ff9999]">
-                        <p className="font-['Hakgyoansim_Dunggeunmiso_OTF:R',sans-serif] text-[11px] text-[#5c4033] mb-2">
-                          선택된 색상 ({formData.colors.length}/3개)
-                        </p>
-                        {formData.colors.length > 0 ? (
-                          <div className="flex gap-2">
-                            {formData.colors.map((color, index) => (
-                              <div key={index} className="flex-1 text-center">
-                                <div
-                                  className="w-full h-12 rounded-[8px] border-2 border-gray-200 mb-1"
-                                  style={{ backgroundColor: color }}
-                                />
-                                <p className="text-[10px] font-['Hakgyoansim_Dunggeunmiso_OTF:R',sans-serif] text-[#5c4033]">
-                                  {color}
-                                </p>
-                              </div>
-                            ))}
-                            {/* 빈 슬롯 표시 */}
-                            {Array.from({ length: 3 - formData.colors.length }).map((_, index) => (
-                              <div key={`empty-${index}`} className="flex-1 text-center">
-                                <div className="w-full h-12 rounded-[8px] border-2 border-dashed border-gray-300 bg-gray-50 mb-1 flex items-center justify-center">
-                                  <span className="text-gray-400 text-[20px]">+</span>
-                                </div>
-                                <p className="text-[10px] font-['Hakgyoansim_Dunggeunmiso_OTF:R',sans-serif] text-gray-400">
-                                  빈 슬롯
-                                </p>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="flex gap-2">
-                            {Array.from({ length: 3 }).map((_, index) => (
-                              <div key={index} className="flex-1 text-center">
-                                <div className="w-full h-12 rounded-[8px] border-2 border-dashed border-gray-300 bg-gray-50 mb-1 flex items-center justify-center">
-                                  <span className="text-gray-400 text-[20px]">+</span>
-                                </div>
-                                <p className="text-[10px] font-['Hakgyoansim_Dunggeunmiso_OTF:R',sans-serif] text-gray-400">
-                                  빈 슬롯
-                                </p>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {showColorPicker && (
-                    <div className="mb-4 p-4 bg-[#f9f9f9] rounded-[12px]">
-                      <ChromePicker
-                        color={selectedColor}
-                        onChange={(color) => setSelectedColor(color.hex)}
-                        className="mx-auto"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleAddColor}
-                        className="mt-3 w-full bg-[#8faf3e] text-white font-['Hakgyoansim_Dunggeunmiso_OTF:R',sans-serif] text-[12px] px-3 py-2 rounded-[8px] hover:bg-[#7a9535] transition-colors"
-                      >
-                        색상 추가
-                      </button>
-                    </div>
-                  )}
-
-                  {/* 현재 색상 팔레트 - 항상 표시 */}
-                  <div className="p-3 bg-white rounded-[10px] border border-[#e5fed9]">
-                    <p className="font-['Hakgyoansim_Dunggeunmiso_OTF:R',sans-serif] text-[11px] text-[#5c4033] mb-2 opacity-70">
-                      현재 팔레트 ({formData.colors.length}/3개)
-                    </p>
-                    {formData.colors.length > 0 ? (
-                      <div className="flex flex-wrap gap-2">
-                        {formData.colors.map((color, index) => (
-                          <div key={index} className="relative group">
-                            <div
-                              className="w-12 h-12 rounded-[8px] border-2 border-gray-200 cursor-pointer"
-                              style={{ backgroundColor: color }}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveColor(index)}
-                              className="absolute -top-2 -right-2 bg-[#ff9999] text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-[10px]"
-                            >
-                              ×
-                            </button>
-                            <p className="text-[10px] text-center mt-1 font-['Hakgyoansim_Dunggeunmiso_OTF:R',sans-serif] text-[#5c4033]">
-                              {color}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-center font-['Hakgyoansim_Dunggeunmiso_OTF:R',sans-serif] text-[11px] text-[#5c4033] opacity-40 py-2">
-                        색상을 추가해주세요
-                      </p>
-                    )}
                   </div>
                 </div>
 
