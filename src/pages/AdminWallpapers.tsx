@@ -396,6 +396,13 @@ export default function AdminWallpapers() {
     }
   };
 
+  // Base64를 File 객체로 변환하는 헬퍼 함수
+  const base64ToFile = async (base64String: string, filename: string): Promise<File> => {
+    const res = await fetch(base64String);
+    const blob = await res.blob();
+    return new File([blob], filename, { type: blob.type });
+  };
+
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
@@ -404,7 +411,12 @@ export default function AdminWallpapers() {
       return;
     }
 
-    if (!formData.images.mobile.file && !formData.images.tablet.file && !formData.images.desktop.file && !editingWallpaper) {
+    // file 또는 preview가 있는지 확인
+    const hasMobileImage = formData.images.mobile.file || formData.images.mobile.preview;
+    const hasTabletImage = formData.images.tablet.file || formData.images.tablet.preview;
+    const hasDesktopImage = formData.images.desktop.file || formData.images.desktop.preview;
+
+    if (!hasMobileImage && !hasTabletImage && !hasDesktopImage && !editingWallpaper) {
       toast.error("최소한 하나의 이미지를 업로드해주세요");
       return;
     }
@@ -417,14 +429,26 @@ export default function AdminWallpapers() {
       submitFormData.append('colors', JSON.stringify(formData.colors));
 
       // 각 디바이스별 이미지 파일 추가
+      // file이 있으면 file 사용, 없으면 preview(Base64)를 File로 변환
       if (formData.images.mobile.file) {
         submitFormData.append('mobile', formData.images.mobile.file);
+      } else if (formData.images.mobile.preview && formData.images.mobile.preview.startsWith('data:')) {
+        const file = await base64ToFile(formData.images.mobile.preview, 'mobile.jpg');
+        submitFormData.append('mobile', file);
       }
+
       if (formData.images.tablet.file) {
         submitFormData.append('tablet', formData.images.tablet.file);
+      } else if (formData.images.tablet.preview && formData.images.tablet.preview.startsWith('data:')) {
+        const file = await base64ToFile(formData.images.tablet.preview, 'tablet.jpg');
+        submitFormData.append('tablet', file);
       }
+
       if (formData.images.desktop.file) {
         submitFormData.append('desktop', formData.images.desktop.file);
+      } else if (formData.images.desktop.preview && formData.images.desktop.preview.startsWith('data:')) {
+        const file = await base64ToFile(formData.images.desktop.preview, 'desktop.jpg');
+        submitFormData.append('desktop', file);
       }
 
       if (editingWallpaper) {
@@ -523,6 +547,10 @@ export default function AdminWallpapers() {
                   src={getImageUrl(wallpaper.imageUrl)}
                   alt={wallpaper.title}
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    console.error('이미지 로드 실패:', wallpaper.title);
+                    e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23f0f0f0" width="400" height="300"/%3E%3Ctext fill="%23999" font-family="sans-serif" font-size="20" x="50%25" y="50%25" text-anchor="middle" dominant-baseline="middle"%3E이미지 없음%3C/text%3E%3C/svg%3E';
+                  }}
                 />
               </div>
 
@@ -754,7 +782,7 @@ export default function AdminWallpapers() {
             ) : (
               // 작성 화면
               <div className="p-6 overflow-y-auto max-h-[90vh]">
-              <form onSubmit={(e) => { e.preventDefault(); setShowPreview(true); }} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <h3 className="font-['Hakgyoansim_Dunggeunmiso_OTF:B',sans-serif] text-[18px] text-[#5c4033]">
                   {editingWallpaper ? "배경화면 수정" : "새 배경화면 추가"}
                 </h3>
@@ -1044,7 +1072,7 @@ export default function AdminWallpapers() {
                     type="submit"
                     className="flex-1 bg-gradient-to-br from-[#FFD2D2] to-[#FF9999] text-white font-['Hakgyoansim_Dunggeunmiso_OTF:R',sans-serif] text-[16px] px-6 py-3 rounded-[12px] shadow-md hover:shadow-lg transition-all hover:scale-105"
                   >
-                    미리보기
+                    {editingWallpaper ? "수정하기" : "저장하기"}
                   </button>
                 </div>
               </form>

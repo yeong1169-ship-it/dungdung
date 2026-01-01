@@ -341,28 +341,62 @@ export default function DownloadDetail({ wallpaperId, onBack }: { wallpaperId: s
       return;
     }
 
+    const fullImageUrl = getImageUrl(imageUrl);
+
+    // 모바일 브라우저 감지
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const isAndroid = /Android/i.test(navigator.userAgent);
+
+    // iOS: 새 탭에서 이미지 직접 열기 (가장 확실한 방법)
+    if (isIOS) {
+      // 새 창에서 이미지 열기
+      window.open(fullImageUrl, '_blank');
+
+      // 안내 메시지
+      setTimeout(() => {
+        alert('📱 이미지 저장 방법:\n\n1. 새 탭에서 이미지가 열립니다\n2. 이미지를 길게 누르세요\n3. "이미지 저장" 또는 "사진 앨범에 추가"를 선택하세요');
+      }, 500);
+      return;
+    }
+
     try {
-      // 이미지 다운로드 (CORS 문제 해결을 위해 fetch 사용)
-      const fullImageUrl = getImageUrl(imageUrl);
+      // Android 또는 PC: Blob 다운로드
       const response = await fetch(fullImageUrl);
       const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      const blobUrl = window.URL.createObjectURL(blob);
 
       const link = document.createElement('a');
-      link.href = url;
+      link.href = blobUrl;
       link.download = `${wallpaper.title}_${selectedSize}.png`;
+      link.style.display = 'none';
+
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
 
-      // Blob URL 해제
-      window.URL.revokeObjectURL(url);
+      setTimeout(() => {
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(blobUrl);
+      }, 100);
+
+      // Android 안내 (일부 브라우저에서 다운로드가 안 될 수 있음)
+      if (isAndroid) {
+        setTimeout(() => {
+          // 다운로드가 시작되지 않았다면 새 탭에서 열기
+          const checkDownload = confirm('다운로드가 시작되지 않았나요?\n\n"확인"을 누르면 새 탭에서 이미지를 엽니다.');
+          if (checkDownload) {
+            window.open(fullImageUrl, '_blank');
+            alert('이미지를 길게 눌러서 저장하세요.');
+          }
+        }, 2000);
+      }
 
       // 다운로드 카운트 증가 API 호출 (선택사항)
       // await wallpapersApi.download(wallpaper._id);
     } catch (error) {
       console.error('다운로드 실패:', error);
-      alert('다운로드에 실패했습니다.');
+      // 실패 시 새 탭에서 열기
+      window.open(fullImageUrl, '_blank');
+      alert('이미지를 길게 눌러서 저장하세요.');
     }
   };
 
