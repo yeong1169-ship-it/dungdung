@@ -22,6 +22,9 @@ const PORT = process.env.PORT || 5000;
 // 데이터베이스 연결
 connectDB();
 
+// Render.com 프록시 신뢰 설정 (express-rate-limit 오류 해결)
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(helmet({
   contentSecurityPolicy: false // CSP 비활성화 (개발 환경)
