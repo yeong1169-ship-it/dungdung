@@ -43,6 +43,7 @@ interface FormData {
 export default function AdminWallpapers() {
   const [wallpapers, setWallpapers] = useState<Wallpaper[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingWallpaper, setEditingWallpaper] = useState<Wallpaper | null>(null);
   const [currentDevice, setCurrentDevice] = useState<DeviceType>("mobile");
@@ -406,6 +407,11 @@ export default function AdminWallpapers() {
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
+    if (isSaving) {
+      console.log('이미 저장 중입니다...');
+      return;
+    }
+
     if (!formData.title.trim()) {
       toast.error("제목을 입력해주세요");
       return;
@@ -421,6 +427,7 @@ export default function AdminWallpapers() {
       return;
     }
 
+    setIsSaving(true);
     try {
       // FormData 생성
       const submitFormData = new FormData();
@@ -475,6 +482,8 @@ export default function AdminWallpapers() {
       console.error("❌ 배경화면 저장 실패:", error);
       console.error("에러 상세:", error.response?.data || error.message);
       toast.error(error.response?.data?.error || error.message || "배경화면 저장에 실패했습니다");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -742,9 +751,10 @@ export default function AdminWallpapers() {
                   <button
                     type="button"
                     onClick={handleSubmit}
-                    className="w-full bg-gradient-to-br from-[#FFD2D2] to-[#FF9999] text-white font-['Hakgyoansim_Dunggeunmiso_OTF:R',sans-serif] text-[16px] py-4 rounded-full shadow-md hover:shadow-lg transition-all"
+                    disabled={isSaving}
+                    className="w-full bg-gradient-to-br from-[#FFD2D2] to-[#FF9999] text-white font-['Hakgyoansim_Dunggeunmiso_OTF:R',sans-serif] text-[16px] py-4 rounded-full shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {editingWallpaper ? "수정하기" : "등록하기"}
+                    {isSaving ? "⏳ 업로드 중..." : (editingWallpaper ? "수정하기" : "등록하기")}
                   </button>
                 </div>
               </div>
@@ -861,9 +871,10 @@ export default function AdminWallpapers() {
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 bg-gradient-to-br from-[#FFD2D2] to-[#FF9999] text-white font-['Hakgyoansim_Dunggeunmiso_OTF:R',sans-serif] text-[16px] px-6 py-3 rounded-[12px] shadow-md hover:shadow-lg transition-all hover:scale-105"
+                    disabled={isSaving}
+                    className="flex-1 bg-gradient-to-br from-[#FFD2D2] to-[#FF9999] text-white font-['Hakgyoansim_Dunggeunmiso_OTF:R',sans-serif] text-[16px] px-6 py-3 rounded-[12px] shadow-md hover:shadow-lg transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                   >
-                    {editingWallpaper ? "수정하기" : "저장하기"}
+                    {isSaving ? "⏳ 업로드 중..." : (editingWallpaper ? "수정하기" : "저장하기")}
                   </button>
                 </div>
               </form>
